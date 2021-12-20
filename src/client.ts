@@ -7,11 +7,7 @@ const [, uname, pwd] = /^ws:\/\/(.*):(.*)@/.exec(url) || []
 
 const users = new Set<string>()
 
-const client = new WebSocket(url, {
-  headers: {
-    Authorization: `DIY ${ uname }@${ pwd }`
-  }
-})
+const client = new WebSocket(url)
 
 client.on('message', m => {
   const message = JSON.parse(m.toString()) as Messages.Server

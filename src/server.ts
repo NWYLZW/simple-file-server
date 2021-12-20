@@ -19,17 +19,17 @@ const broadcast = (message: string, filters: WebSocket[] = []) => server.clients
 })
 
 server.on('connection', (ws, req) => {
-  let uname: string = 'anonymous', pwd: string
+  let uid = ''
   // 从请求头中获取用户名与密码
-  const [type, token] = req.headers.authorization?.split(' ') as ['DIY', string]
+  const [type, token] = req.headers.authorization?.split(' ') as ['Basic', string]
   switch (type) {
-    case 'DIY':
-      [uname, pwd] = token.split('@')
+    case 'Basic':
+      const [uname, pwd] = Buffer.from(token, 'base64').toString().split(':')
+      uid = `${ uname }@${ req.socket.remoteAddress }`
       break
     default:
       ws.send('Unauthorized')
   }
-  const uid = uname + '@' + req.socket.remoteAddress
 
   console.log(`[I] ${ uid } is connected.`)
   users.set(uid, ws)

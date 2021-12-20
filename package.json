@@ -6,8 +6,8 @@
   "scripts": {
     "start:s": "ts-node src/server.ts",
     "start:c": "ts-node src/client.ts",
-    "start:c@foo": "yarn start:c ws://foo:bar@192.168.1.5:7981",
-    "start:c@bar": "yarn start:c ws://bar:foo@192.168.1.5:7981"
+    "start:c@foo": "yarn start:c ws://foo:bar@localhost:7981",
+    "start:c@bar": "yarn start:c ws://bar:foo@localhost:7981"
   },
   "devDependencies": {
     "@types/ws": "^8.2.2",
