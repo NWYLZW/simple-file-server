@@ -26,8 +26,11 @@ const app = createApp({
     }
   },
   methods: {
-    printMessage(str) {
-      this.historyMessages.push(str)
+    printMessage(str, username) {
+      this.historyMessages.push({
+        name: username,
+        msg: str
+      })
     },
     /**
      * init the websocket connection
@@ -55,10 +58,12 @@ const app = createApp({
         switch (message.t) {
           case 'HELLO':
             message.p.forEach(user => this.users.add(user))
-            this.printMessage(`[I] ${ message.p.join(', ') } in room`)
+            ElMessage.info(`${ message.p.join(', ') } 在线`)
             break
           case 'MESSAGE':
-            this.printMessage(`[I] ${ message.p }`)
+            console.log('message.p', message.p)
+            const otherUser = message.p.split('@')[0]
+            this.printMessage(`[${ otherUser }] ${ message.p.split(':')[1] }`, otherUser)
             break
           case 'USER_ADD':
             this.users.add(message.p)
@@ -91,11 +96,11 @@ const app = createApp({
             const {
               filename, uid
             } = message.p
-            ElMessageBox.alert(`${ uid } want to send ${ filename } file to you`, 'Confirm', {
-              confirmButtonText: 'Confirm'
+            ElMessageBox.alert(`${ uid } 想发送 ${ filename } 文件`, '确认', {
+              confirmButtonText: '确认'
             }).then(() => {
               this.receiveFileName = filename
-              ElMessage.info('File is sending...')
+              ElMessage.info('文件正在发送中...')
               this.client.send(JSON.stringify({
                 t: 'RECEIVE_FILE',
                 p: uid
@@ -126,7 +131,7 @@ const app = createApp({
       if (!msg)
         return
       this.client.send(JSON.stringify({ t: 'MESSAGE', p: msg }))
-      this.printMessage(`[I] 我: ${ msg }`)
+      this.printMessage(`${ msg } [${ this.username }]`, this.username)
       this.message = ''
     },
     sendFile(uid) {

@@ -15,6 +15,12 @@
       flex-direction: column;
       height: 100vh;
     }
+    .right {
+        float: right;
+    }
+    .left {
+        float: left;
+    }
     div.login-card {
       position: fixed;
       padding: 40px;
@@ -47,6 +53,11 @@
       background-color: #fff;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
       overflow: hidden;
+    }
+    .send-content {
+        margin: 5px 0;
+        display: block;
+        clear: both;
     }
     div.content > div.users {
       width: 200px;
@@ -116,7 +127,9 @@
           <div
             v-for="(m, index) in historyMessages" :key="index"
             class="history-message">
-            {{ m }}
+              <div class="send-content" :class="{'right': m.name === username, 'left': m.name !== username}">
+               {{ m.msg }}
+              </div>
           </div>
         </div>
         <el-input
