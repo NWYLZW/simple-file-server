@@ -6,6 +6,7 @@
   "scripts": {
     "start:s": "ts-node src/server.ts",
     "start:c": "ts-node src/client.ts",
+    "start:c:t": "ts-node src/test-client.ts",
     "start:c@foo": "yarn start:c ws://foo:bar@localhost:7981/ws",
     "start:c@bar": "yarn start:c ws://bar:foo@localhost:7981/ws"
   },
@@ -19,6 +20,7 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
+    "element-plus": "^1.2.0-beta.6",
     "koa": "^2.13.4",
     "koa-route": "^3.2.0",
     "koa-static": "^5.0.0",

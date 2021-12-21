@@ -62,6 +62,7 @@
       height: 32px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
     }
     div.content > div.chat-room {
       padding: 20px 10px;
@@ -82,7 +83,7 @@
       v-if="!this.client"
       class="login-card">
       <el-input v-model="username" placeholder="请输入用户名"></el-input>
-      <el-input v-model="password" placeholder="请输入密码"></el-input>
+      <el-input v-model="password" placeholder="请输入密码" show-password></el-input>
       <el-button type="primary" @click="login">登录</el-button>
     </div>
     <div class="header">
@@ -93,7 +94,16 @@
       <div class="users">
         <div
           v-for="(u, index) in users" :key="index"
-          class="user"> {{ u }} </div>
+          class="user">
+          {{ u }}
+          <el-button
+            v-loading.fullscreen.lock="loading"
+            v-if="u.split('@')[0] !== username"
+            size="mini" type="primary" circle
+            @click="sendFile(u)">
+            文
+          </el-button>
+        </div>
         <el-empty
           v-if="!this.client"
           :description="'未登陆'"></el-empty>
@@ -110,7 +120,8 @@
           </div>
         </div>
         <el-input
-          v-model="message">
+          v-model="message"
+          @keydown.enter="send">
           <template #append>
             <el-button @click="send">发送</el-button>
           </template>
@@ -118,6 +129,7 @@
       </div>
     </div>
   </div>
+  <input id="selFile" type="file" style="display: none;">
   <script src="index.js"></script>
 </body>
 </html>

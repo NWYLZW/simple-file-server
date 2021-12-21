@@ -1,5 +1,6 @@
 import { WebSocket } from 'ws'
 import { Messages } from './messages'
+import * as fs from 'fs'
 
 const [url] = process.argv.slice(2)
 
@@ -9,7 +10,11 @@ const users = new Set<string>()
 
 const client = new WebSocket(url)
 
-client.on('message', m => {
+client.on('message', (m, isBinary) => {
+  if (isBinary) {
+    fs.writeFileSync('.temp.txt', m as Buffer)
+    return
+  }
   const message = JSON.parse(m.toString()) as Messages.Server
   switch (message.t) {
     case 'HELLO':
