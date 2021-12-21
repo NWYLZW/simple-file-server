@@ -1,67 +1,81 @@
-/** @type {WebSocket} */
-let client = null
+const { createApp } = (/** @type {import('vue')} */ Vue)
 
-const
-  users = new Set(),
-  /** @type {HTMLTextAreaElement} */
-  chat = document.querySelector('#chat'),
-  /** @type {HTMLTextAreaElement} */
-  message = document.querySelector('#message'),
-  username = document.querySelector('#username'),
-  password = document.querySelector('#password')
+const app = createApp({
+  data() {
+    return {
+      /** @type {WebSocket} */
+      client: null,
+      users: new Set(),
+      username: '',
+      password: '',
+      historyMessages: [],
+      message: ''
+    }
+  },
+  computed: {
+    history() {
+      return this.historyMessages.join('\n')
+    }
+  },
+  methods: {
+    printMessage(str) {
+      this.historyMessages.push(str)
+    },
+    /**
+     * init the websocket connection
+     *
+     * @param {string} url
+     */
+    initClient(url) {
+      this.client = new WebSocket(url)
 
-function printMessage(str) {
-  chat.value += `${str}\n`
-}
+      this.client.onmessage = m => {
+        const message = JSON.parse(m.data.toString())
+        switch (message.t) {
+          case 'HELLO':
+            message.p.forEach(user => this.users.add(user))
+            this.printMessage(`[I] ${ message.p.join(', ') } in room`)
+            break
+          case 'MESSAGE':
+            this.printMessage(`[I] ${ message.p }`)
+            break
+          case 'USER_ADD':
+            this.users.add(message.p)
+            this.printMessage(`[I] ${ message.p } joined`)
+            break
+          case 'USER_DEL':
+            this.users.delete(message.p)
+            this.printMessage(`[I] ${ message.p } left`)
+            break
+        }
+      }
+    },
+    login() {
+      let url = `ws://${window.location.host}/ws`
+      if (!this.username || !this.password)
+        return
 
-/**
- * init the websocket connection
- *
- * @param {string} url
- */
-function initClient(url) {
-  client = new WebSocket(url)
-
-  client.onmessage = m => {
-    const message = JSON.parse(m.data.toString())
-    switch (message.t) {
-      case 'HELLO':
-        message.p.forEach(users.add.bind(users))
-        printMessage(`[I] ${ message.p.join(', ') } in room`)
-        break
-      case 'MESSAGE':
-        printMessage(`[I] ${ message.p }`)
-        break
-      case 'USER_ADD':
-        users.add(message.p)
-        printMessage(`[I] ${ message.p } joined`)
-        break
-      case 'USER_DEL':
-        users.delete(message.p)
-        printMessage(`[I] ${ message.p } left`)
-        break
+      const authorization = btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))
+      url += `?authorization=Basic ${authorization}`
+      this.initClient(url)
+    },
+    send() {
+      if (!this.client) {
+        alert('You are not logged in')
+        return
+      }
+      if (!this.message)
+        return
+      const msg = this.message.trim()
+      if (!msg)
+        return
+      this.client.send(JSON.stringify({ t: 'MESSAGE', p: msg }))
+      this.historyMessages.push(`[I] 我: ${ msg }`)
+      this.message = ''
     }
   }
-}
-
-;(/** @type {HTMLButtonElement} */ login).addEventListener('click', () => {
-  let url = `ws://${window.location.host}/ws`
-  if (!username.value || !password.value)
-    return
-
-  const authorization = btoa(unescape(encodeURIComponent(`${username.value}:${password.value}`)))
-  url += `?authorization=Basic ${authorization}`
-  initClient(url)
 })
-;(/** @type {HTMLButtonElement} */ send).addEventListener('click', () => {
-  if (!client) {
-    alert('You are not logged in')
-    return
-  }
-  if (!message.value)
-    return
-  const msg = message.value.trim()
-  if (!msg)
-    return
-  client.send(JSON.stringify({ t: 'MESSAGE', p: msg }))
-})
+
+app
+  .use(ElementPlus)
+  .mount('#app')
