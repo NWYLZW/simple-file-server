@@ -83,9 +83,9 @@ const app = createApp({
                 fileSender.send(buffer)
                 fileSender.close()
                 this.loading = false
+                selFile.files = new DataTransfer().files
               }
             })
-            selFile.files = new DataTransfer().files
             break
           case 'RECEIVE_FILE':
             const {
@@ -132,14 +132,14 @@ const app = createApp({
     sendFile(uid) {
       this.loading = true
       ;(/** @type {HTMLInputElement} */ selFile).click()
-      selFile.addEventListener('change', () => {
+      selFile.onchange = () => {
         if (selFile.files.length > 0) {
           this.client.send(JSON.stringify({ t: 'SEND_FILE', p: {
             uid,
             filename: selFile.files[0].name
           } }))
         }
-      })
+      }
     }
   }
 })

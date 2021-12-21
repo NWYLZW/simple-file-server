@@ -39,21 +39,21 @@ app.ws.use(route.all('/ws', ({ websocket: ws, request: req }) => {
     return
   }
 
-  let uid = ''
+  let selfUid = ''
   // 从请求头中获取用户名与密码
   const [type, token] = authorization?.split(' ') as ['Basic', string]
   switch (type) {
     case 'Basic':
       const [uname, pwd] = Buffer.from(token, 'base64').toString().split(':')
-      uid = `${ uname }@${ req.socket.remoteAddress }`
+      selfUid = `${ uname }@${ req.socket.remoteAddress }`
       break
     default:
       ws.close(4003, 'Unauthorized')
       return
   }
 
-  console.log(`[I] ${ uid } is connected.`)
-  users.set(uid, ws)
+  console.log(`[I] ${ selfUid } is connected.`)
+  users.set(selfUid, ws)
   // 连接建立时发送当前在线用户列表
   ws.send(JSON.stringify({
     t: 'HELLO',
@@ -61,7 +61,7 @@ app.ws.use(route.all('/ws', ({ websocket: ws, request: req }) => {
   }))
   broadcast(JSON.stringify({
     t: 'USER_ADD',
-    p: uid
+    p: selfUid
   }), [ws])
 
   ws.on('message', m => {
@@ -70,7 +70,7 @@ app.ws.use(route.all('/ws', ({ websocket: ws, request: req }) => {
       case 'MESSAGE':
         broadcast(JSON.stringify({
           t: 'MESSAGE',
-          p: `${ uid }: ${ message.p }`
+          p: `${ selfUid }: ${ message.p }`
         }), [ws])
         break
       // 客户端触发 发送文件 事件，请求他人同意接收文件
@@ -78,24 +78,24 @@ app.ws.use(route.all('/ws', ({ websocket: ws, request: req }) => {
         const { uid: target, filename } = message.p
         users.get(target)?.send(JSON.stringify({
           t: 'RECEIVE_FILE',
-          p: { uid, filename }
+          p: { uid: selfUid, filename }
         }))
         break
       // 客户端触发 接收文件 事件，允许他人向当前用户发送文件
       case 'RECEIVE_FILE':
         users.get(message.p)?.send(JSON.stringify({
           t: 'SEND_FILE',
-          p: uid
+          p: selfUid
         }))
         break
     }
   })
   ws.on('close', () => {
-    console.log(`[I] ${ uid } is disconnected.`)
-    users.delete(uid)
+    console.log(`[I] ${ selfUid } is disconnected.`)
+    users.delete(selfUid)
     broadcast(JSON.stringify({
       t: 'USER_DEL',
-      p: uid
+      p: selfUid
     }), [ws])
   })
 }))
