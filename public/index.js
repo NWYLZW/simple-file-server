@@ -68,14 +68,14 @@ const app = createApp({
           case 'USER_ADD':
             this.users.add(message.p)
             ElNotification.success({
-              title: 'User joined',
+              title: '用户加入',
               message: message.p
             })
             break
           case 'USER_DEL':
             this.users.delete(message.p)
             ElNotification.warning({
-              title: 'User left',
+              title: '用户退出',
               message: message.p
             })
             break
@@ -88,6 +88,7 @@ const app = createApp({
                 fileSender.send(buffer)
                 fileSender.close()
                 this.loading = false
+                this.printMessage('[系统消息]对方已成功接收文件', this.username)
                 selFile.files = new DataTransfer().files
               }
             })
@@ -105,6 +106,8 @@ const app = createApp({
                 t: 'RECEIVE_FILE',
                 p: uid
               }))
+              console.log('uid')
+              this.printMessage('[系统消息]文件已成功接收', uid)
             })
         }
       }
@@ -116,7 +119,7 @@ const app = createApp({
     },
     verifySend() {
       if (!this.client) {
-        throw new Error('You are not logged in')
+        throw new Error('请先登录')
       }
     },
     send() {

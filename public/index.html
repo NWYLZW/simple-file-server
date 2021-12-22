@@ -109,6 +109,7 @@
           {{ u }}
           <el-button
             v-loading.fullscreen.lock="loading"
+            element-loading-text="对方正在接收文件，请稍等"
             v-if="u.split('@')[0] !== username"
             size="mini" type="primary" circle
             @click="sendFile(u)">
