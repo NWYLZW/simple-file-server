@@ -1,3 +1,14 @@
+if (!File.prototype.arrayBuffer) {
+  File.prototype.arrayBuffer = function() {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = () => reject(reader.error)
+      reader.readAsArrayBuffer(this)
+    })
+  }
+}
+
 const {
   ElMessage, ElNotification, ElMessageBox
 } = (/** @type {import('element-plus')} */ ElementPlus)
